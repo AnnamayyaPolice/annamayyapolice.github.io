@@ -163,13 +163,7 @@ def process_xlsx(file_path):
         hdr = header[c]
         parameters.append(hdr)
         lower_hdr = hdr.lower()
-        if ("natgrid" in lower_hdr or 
-            "8-15" in lower_hdr or 
-            "eprose" in lower_hdr or 
-            "news360" in lower_hdr):
-            weights[hdr] = 0.0
-        else:
-            weights[hdr] = round(to_num(wts[c]) * 100.0, 1) # Store as percentage
+        weights[hdr] = round(to_num(wts[c]) * 100.0, 1) # Store as percentage
         
     extra_cols = [c for c in range(1, len(header)) if c not in param_cols and header[c]]
     
