@@ -47,12 +47,30 @@ def main():
         sys.exit("Missing folder: " + WEEKS_DIR)
     files = [f for f in os.listdir(WEEKS_DIR)
              if f.lower().endswith(EXTS) and f.lower() not in ("manifest.json", "master-index.json")]
-    files.sort(key=week_end)
+    
+    # Group by week-end date
+    by_date = {}
+    for f in files:
+        date_key = week_end(f)
+        if date_key not in by_date:
+            by_date[date_key] = []
+        by_date[date_key].append(f)
+        
+    filtered_files = []
+    for date_key, group in by_date.items():
+        # Look for a .json file in the group
+        jsons = [f for f in group if f.lower().endswith('.json')]
+        if jsons:
+            filtered_files.extend(jsons)
+        else:
+            filtered_files.extend(group)
+            
+    filtered_files.sort(key=week_end)
     out = os.path.join(WEEKS_DIR, "manifest.json")
     with open(out, "w", encoding="utf-8") as f:
-        json.dump(files, f, ensure_ascii=False, indent=2)
-    print("Wrote %s with %d week(s):" % (out, len(files)))
-    for f in files:
+        json.dump(filtered_files, f, ensure_ascii=False, indent=2)
+    print("Wrote %s with %d week(s):" % (out, len(filtered_files)))
+    for f in filtered_files:
         print("  -", f)
 
 

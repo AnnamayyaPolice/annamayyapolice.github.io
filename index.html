@@ -114,7 +114,8 @@ main{padding:26px 0 70px}
 .card .ch h3{font-size:15px;font-weight:700;color:var(--ink)}
 .card .cb{padding:16px 18px}
 .grid{display:grid;gap:16px}.g2{grid-template-columns:1fr 1fr}
-@media(max-width:900px){.g2{grid-template-columns:1fr}.hmain{flex-wrap:wrap}.hstats{order:3;width:100%}.crest{width:56px;height:56px}}
+@media(max-width:1150px){.g2{grid-template-columns:1fr}}
+@media(max-width:900px){.hmain{flex-wrap:wrap}.hstats{order:3;width:100%}.crest{width:56px;height:56px}}
 
 .podium{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .prow{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:12px;background:var(--panel2);
@@ -134,7 +135,7 @@ main{padding:26px 0 70px}
 
 .tbl-scroll{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-size:13px}
-thead th{position:sticky;top:0;background:linear-gradient(180deg,#1e2d6b,#162253);color:#dfe6fb;
+thead th{position:sticky;top:0;z-index:5;background:linear-gradient(180deg,#1e2d6b,#162253);color:#dfe6fb;
   font-family:'Archivo';font-weight:600;font-size:11px;letter-spacing:.04em;text-transform:uppercase;
   padding:12px 10px;text-align:left;white-space:nowrap;cursor:pointer;user-select:none;border-bottom:2px solid #2f44d0}
 thead th.sortable:hover{color:#fff}
@@ -418,9 +419,12 @@ table.fr th.raw-val-hdr,table.fr th.contrib-hdr{text-align:center}
 table.fr td.raw-val-cell,table.fr td.contrib-cell{text-align:center!important;font-family:'Archivo',sans-serif;font-weight:700}
 
 /* ===== Heatmap — leading cols (sticky rank+name) consistent padding ===== */
-table.hm tbody td.nm{background:var(--panel);font-weight:700;font-size:12px;padding:5px 9px}
-table.hm tbody tr:nth-child(even) td.nm{background:#f7f9fd}
-table.hm tbody tr.clickable:hover td.nm{background:#eaf1fc}
+table.hm tbody td.nm{position:sticky;left:0;z-index:2;background:var(--panel);font-weight:700;font-size:12px;padding:5px 9px;border-right:2px solid var(--line2)!important}
+table.hm tbody tr:nth-child(even) td.nm{background:#f7f9fd!important}
+table.hm tbody tr.clickable:hover td.nm{background:#eaf1fc!important}
+table.hm tbody td{transition:filter 0.15s ease}
+table.hm tbody tr.clickable:hover td:not(.nm){filter:brightness(0.92)}
+
 
 /* ===== Heatmap — center columns consistent with rankings ===== */
 table.hm tbody td.center{padding:4px 7px;vertical-align:middle;text-align:center!important}
@@ -581,9 +585,9 @@ img,canvas,svg,video{max-width:100%}
 .wrap,.card,.panel{max-width:100%}
 .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
 
-/* Tablet / small laptop */
-@media(max-width:1024px){
-  .wrap{padding:0 56px}
+/* Tablet / small laptop / narrow screens */
+@media(max-width:1200px){
+  .wrap{padding:0 32px}
   .hmain{padding:18px 18px}
 }
 
@@ -2036,7 +2040,7 @@ function gradeColorHex(g){return {A:'#16a36a',B:'#3f9fe6',C:'#f0a91e',D:'#f3792b
 /* ===================== 2) HEATMAP ===================== */
 function renderHeatmap(){
   const rows=STATE.rows, P=STATE.parameters;
-  const head = `<th class="hm-ps" style="position:sticky;left:0;z-index:4;background:#1a2a63;color:#dfe6fb;text-align:center;vertical-align:middle">Police Station</th>
+  const head = `<th class="hm-ps" style="position:sticky;left:0;top:0;z-index:6;background:#1a2a63;color:#dfe6fb;text-align:center;vertical-align:middle;border-right:2px solid #2f44d0!important">Police Station</th>
     <th class="center" style="text-align:center;vertical-align:middle">Chg</th><th class="center" style="text-align:center;vertical-align:middle">Score</th><th class="center" style="text-align:center;vertical-align:middle">Δ</th>`+
     P.map((p,i)=>{
       const cat = catLabel(p, i);
@@ -2304,7 +2308,7 @@ function drawDetail(name){
     <!-- SPIDER + PARAMETER SCORES (image 2) — side by side -->
     <div class="grid g2" style="margin-bottom:16px;align-items:start">
       <div class="card"><div class="ch"><h3>Category Spider Chart</h3></div>
-        <div class="cb"><div class="chart-box" style="height:${Math.max(440,vals.length*34)}px"><canvas id="c-radar"></canvas></div></div></div>
+        <div class="cb"><div class="chart-box" style="height:380px"><canvas id="c-radar"></canvas></div></div></div>
       <div class="card"><div class="ch"><h3>Methodology Category Scores (0–100)</h3></div>
         <div class="cb"><div class="chart-box" style="height:${Math.max(440,vals.length*34)}px"><canvas id="c-parambars"></canvas></div></div></div>
     </div>

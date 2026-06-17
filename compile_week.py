@@ -3,6 +3,7 @@ import sys
 import os
 import json
 import openpyxl
+import subprocess
 
 canonical_stations = [
     'Punganur UPS', 'Madanapalle Rural UPS', 'Sodam', 'Madanapalle II Town UPS',
@@ -22,17 +23,32 @@ def norm(name):
         return 'rayachoty traffic'
     elif 'rayachoty' in n:
         return 'rayachoty'
+    if 'peddamandayam' in n:
+        return 'peddamandyam'
     return n
 
 norm_canon = {norm(s): s for s in canonical_stations}
 
 def get_row_by_station(ws, name_col, target_norm):
     rows = list(ws.iter_rows(values_only=True))
+    is_tab_sheet = ws.title and 'tab' in ws.title.lower()
     for r in rows[2:]:
         if len(r) > name_col:
             val = r[name_col]
             if val is None:
                 continue
+            
+            # Special logic for Voyalpad / Thamballapalli typo in Dail-112 TABs sheet
+            if is_tab_sheet:
+                if target_norm == 'thamballapalli':
+                    if norm(val) == 'voyalpad' and str(r[0]).strip() == '10':
+                        return r
+                elif target_norm == 'voyalpad':
+                    if norm(val) == 'voyalpad' and str(r[0]).strip() == '24':
+                        return r
+                    elif norm(val) == 'voyalpad':
+                        continue
+            
             if norm(val) == target_norm:
                 return r
     return None
@@ -50,14 +66,28 @@ def find_column_by_name(ws, keywords, default_idx):
     if len(rows) < 2:
         return default_idx
     
-    # Try looking in row 2 (header)
+    # 1. Try exact matches in row 2 (header)
+    for c_idx, val in enumerate(rows[1]):
+        if val is not None:
+            val_clean = ' '.join(str(val).split()).lower().strip()
+            if val_clean in keywords:
+                return c_idx
+                
+    # 2. Try exact matches in row 1
+    for c_idx, val in enumerate(rows[0]):
+        if val is not None:
+            val_clean = ' '.join(str(val).split()).lower().strip()
+            if val_clean in keywords:
+                return c_idx
+
+    # 3. Fallback to substring matching in row 2
     for c_idx, val in enumerate(rows[1]):
         if val is not None:
             val_clean = ' '.join(str(val).split()).lower()
             if any(k in val_clean for k in keywords):
                 return c_idx
                 
-    # Fallback to row 1
+    # 4. Fallback to substring matching in row 1
     for c_idx, val in enumerate(rows[0]):
         if val is not None:
             val_clean = ' '.join(str(val).split()).lower()
@@ -69,21 +99,8 @@ def find_column_by_name(ws, keywords, default_idx):
 def main():
     wb = openpyxl.load_workbook('PS wise DATA 04062026-10062026.xlsx', data_only=True)
     
-    # Load previous week's JSON data to carry over CEIR Score and eOffice if needed
+    # Note: Dashboard started only from week 04-06-2026 to 10-06-2026. No previous carry-over.
     prev_data = {}
-    prev_json_path = os.path.join('data', 'weeks', 'ANM_PS_03_06_2026-09_06_2026.json')
-    if os.path.exists(prev_json_path):
-        try:
-            with open(prev_json_path, 'r', encoding='utf-8') as f:
-                prev_json = json.load(f)
-                for st in prev_json.get('stations', []):
-                    prev_data[norm(st['name'])] = {
-                        'CEIR Score': st['parameters'].get('CEIR Score', 50.0),
-                        'eOffice': st['parameters'].get('eOffice', 50.0)
-                    }
-            print('Successfully loaded previous week data for carry over.')
-        except Exception as e:
-            print('Warning: could not load previous week JSON:', e)
             
     # Find name column index in each sheet
     sheet_name_cols = {}
@@ -190,8 +207,8 @@ def main():
         crimac = float(r[raw_col]) if (r and len(r) > raw_col and r[raw_col] is not None) else 100.0
         row_data.append(crimac)
         
-        # 12. CEIR Score
-        ceir = prev_data.get(st_norm, {}).get('CEIR Score', 50.0)
+        # 12. CEIR Score (Not present in raw Excel sheet, default to 0.0)
+        ceir = 0.0
         row_data.append(ceir)
         
         # 13. eProsecution
@@ -208,8 +225,8 @@ def main():
         f_j = float(r[raw_col]) if (r and len(r) > raw_col and r[raw_col] is not None) else 0.0
         row_data.append(f_j)
         
-        # 15. eOffice
-        eoff = prev_data.get(st_norm, {}).get('eOffice', 50.0)
+        # 15. eOffice (Not present in raw Excel sheet, default to 0.0)
+        eoff = 0.0
         row_data.append(eoff)
         
         # 16. APOLIS
@@ -270,6 +287,13 @@ def main():
     out_file = os.path.join('data', 'weeks', 'ANM_PS_04_06_2026-10_06_2026.xlsx')
     out_wb.save(out_file)
     print(f'Successfully compiled and saved workbook to {out_file}')
+    
+    # Automatically execute processing and manifest scripts
+    print('Running process_excel.py to generate weekly JSON...')
+    subprocess.run([sys.executable, 'process_excel.py'], check=True)
+    print('Running make_manifest.py to regenerate manifest.json...')
+    subprocess.run([sys.executable, 'make_manifest.py'], check=True)
+    print('All data compilation steps complete and JSON dashboard files synchronized successfully.')
 
 if __name__ == '__main__':
     main()
