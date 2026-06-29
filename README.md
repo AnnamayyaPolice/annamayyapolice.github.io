@@ -15,7 +15,7 @@ Since the dashboard is built entirely with static files (HTML, CSS, JS, and JSON
    ```
 
 2. **Go to Repository Settings**:
-   * Open your browser and navigate to your GitHub repository: [Narasimhulu3996/SinglePageWebAPP Settings/Pages](https://github.com/Narasimhulu3996/SinglePageWebAPP/settings/pages).
+   * Open your browser and navigate to your GitHub repository: [annamayyapolice/annamayyapolice.github.io Settings/Pages](https://github.com/annamayyapolice/annamayyapolice.github.io/settings/pages).
    * Or click the **Settings** tab at the top of your GitHub repository page and select **Pages** from the left-hand sidebar (under the "Code and automation" section).
 
 3. **Configure Build and Deployment**:
@@ -26,7 +26,7 @@ Since the dashboard is built entirely with static files (HTML, CSS, JS, and JSON
 4. **Access the Live URL**:
    * GitHub will automatically start a deployment action. After about 1-2 minutes, refresh the settings page.
    * A banner will appear at the top showing your live URL, which will look like:
-     👉 **[https://narasimhulu3996.github.io/SinglePageWebAPP/](https://narasimhulu3996.github.io/SinglePageWebAPP/)**
+     👉 **[https://annamayyapolice.github.io/](https://annamayyapolice.github.io/)**
 
 ---
 
